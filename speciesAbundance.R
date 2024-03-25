@@ -19,13 +19,12 @@ defineModule(sim, list(
   timeunit = "year",
   citation = list("citation.bib"),
   documentation = list("NEWS.md", "README.md", "speciesAbundance.Rmd"),
-  reqdPkgs = list("SpaDES.core (>= 2.0.3)", "ggplot2"),
+  reqdPkgs = list("SpaDES.core (>= 2.0.3)", "terra", "reproducible", "ggplot2"),
   parameters = bindrows(
     defineParameter(".plotInitialTime", "numeric", start(sim), start(sim), end(sim),
                     "Describes the simulation time at which the first plot event should occur."),
-    defineParameter(".studyAreaName", "character", "Riparian Woodland Reserve", NA, NA,
-                    "Human-readable name for the study area used - e.g., a hash of the study",
-                    "area obtained using `reproducible::studyAreaName()`")
+    defineParameter("studyAreaName", "character", "Riparian Woodland Reserve", NA, NA,
+                    "Name for the study area used")
   ),
   inputObjects = bindrows(
     expectsInput(objectName = "abund", 
@@ -34,7 +33,7 @@ defineModule(sim, list(
                                "numeric form), `years` (year of the data collection in numeric",
                                "form) and coordinates in  latlong system (two columns, `lat` and",
                                "`long`, indicating latitude and longitude, respectively)"), 
-                 sourceURL = "https://github.com/tati-micheletti/EFI_webinar/raw/main/abundanceData.csv")
+                 sourceURL = "https://zenodo.org/records/10869730/files/abundanceData.csv")
   ),
   outputObjects = bindrows(
     createsOutput(objectName = "abundaRas", objectClass = "spatRaster", 
@@ -61,13 +60,13 @@ doEvent.speciesAbundance = function(sim, eventTime, eventType) {
       if (!is(sim$abund, "data.table"))
         sim$abund <- data.table(sim$abund)
       
-      if (!all("abundance" %in% names(abund), 
-               "years" %in% names(abund),
-               "lat" %in% names(abund),
-               "long" %in% names(abund)))
+      if (!all("abundance" %in% names(sim$abund), 
+               "years" %in% names(sim$abund),
+               "lat" %in% names(sim$abund),
+               "long" %in% names(sim$abund)))
         stop("Please revise the column names in the abundance data")
       
-      lastYearOfData <- max(as.numeric(sim$abund[, c("years")]))
+      lastYearOfData <- max(as.numeric(sim$abund[, years]))
       
       # schedule future event(s)
       sim <- scheduleEvent(sim, time(sim), "speciesAbundance", "tableToRasters")
@@ -79,7 +78,8 @@ doEvent.speciesAbundance = function(sim, eventTime, eventType) {
       
       # do stuff for this event
       sim$abundaRas <- convertToRaster(dataSet = sim$abund, 
-                                       currentTime = time(sim))
+                                       currentTime = time(sim),
+                                       nameRaster = paste0(P(sim)$studyAreaName, ": ", time(sim)))
       sim$allAbundaRas <- appendRaster(allAbundanceRasters = sim$allAbundaRas, 
                                        newRaster = sim$abundaRas)
       
@@ -91,8 +91,8 @@ doEvent.speciesAbundance = function(sim, eventTime, eventType) {
     plot = {
       # ! ----- EDIT BELOW ----- ! #
       # do stuff for this event
+      terra::plot(sim$abundaRas, main = paste0(P(sim)$studyAreaName, ": ", time(sim)))
       plotAbundance(abundanceData = sim$abund, yearsToPlot = start(sim):time(sim))
-      plot(ras, main = paste0(P(sim)$.studyAreaName, ": ", time(sim)))
       # schedule future event(s)
       sim <- scheduleEvent(sim, time(sim) + 1, "speciesAbundance", "plot")
       
@@ -118,9 +118,10 @@ doEvent.speciesAbundance = function(sim, eventTime, eventType) {
 ## event functions
 #   - keep event functions short and clean, modularize by calling subroutines from section below.
 
-convertToRaster <- function(dataSet, currentTime){
-  ras <- rast(dataSet[years == currentTime, c("lat", "lon", "abundance")], type="xyz")
+convertToRaster <- function(dataSet, currentTime, nameRaster){
+  ras <- rast(dataSet[years == currentTime, c("lat", "long", "abundance")], type="xyz")
   crs(ras) <- "GEOGCRS[\"WGS 84 (CRS84)\",\n    DATUM[\"World Geodetic System 1984\",\n        ELLIPSOID[\"WGS 84\",6378137,298.257223563,\n            LENGTHUNIT[\"metre\",1]]],\n    PRIMEM[\"Greenwich\",0,\n        ANGLEUNIT[\"degree\",0.0174532925199433]],\n    CS[ellipsoidal,2],\n        AXIS[\"geodetic longitude (Lon)\",east,\n            ORDER[1],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n        AXIS[\"geodetic latitude (Lat)\",north,\n            ORDER[2],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n    USAGE[\n        SCOPE[\"unknown\"],\n        AREA[\"World\"],\n        BBOX[-90,-180,90,180]],\n    ID[\"OGC\",\"CRS84\"]]"
+  names(ras) <- nameRaster
   return(ras)
 }
 
@@ -136,6 +137,7 @@ appendRaster <- function(allAbundanceRasters, newRaster){
 }
 
 plotAbundance <- function(abundanceData, yearsToPlot){
+  Sys.sleep(2) # To ensure we will see the results from the previous plot
   dataplot <- abundanceData[years %in% yearsToPlot,]
   abundData <- Copy(dataplot)
   abundData[, years := as.factor(years)]
@@ -147,6 +149,8 @@ plotAbundance <- function(abundanceData, yearsToPlot){
                aes(xintercept = averageYear),
                linetype="dashed", color = "black") +
     theme(legend.position = "none")
+  print(pa)
+  Sys.sleep(2) # To ensure we will see the results from the previous plot
   return(pa)
 }
 
@@ -180,7 +184,7 @@ modelAbundTime <- function(abundanceData){
     sim$abund <- prepInputs(url = extractURL("abund"),
                             targetFile = "abundanceData.csv",
                             destinationPath = dPath,
-                            fun = "data.frame",
+                            fun = "read.csv",
                             header = TRUE)
     warning(paste0("abund was not supplied. Using example data"), immediate. = TRUE)
   }
