@@ -28,7 +28,7 @@ defineModule(sim, list(
   ),
   inputObjects = bindrows(
     expectsInput(objectName = "abund", 
-                 objectClass = NA, 
+                 objectClass = "data.frame", 
                  desc = paste0("data frame with the following columns: `counts` (abundance in a",
                                "numeric form), `years` (year of the data collection in numeric",
                                "form) and coordinates in  latlong system (two columns, `lat` and",
@@ -84,7 +84,8 @@ doEvent.speciesAbundance = function(sim, eventTime, eventType) {
                                        newRaster = sim$abundaRas)
       
       # schedule future event(s)
-      sim <- scheduleEvent(sim, time(sim) + 1, "speciesAbundance", "tableToRasters")
+      if (time(sim) < max(as.numeric(sim$abund[, years])))
+        sim <- scheduleEvent(sim, time(sim) + 1, "speciesAbundance", "tableToRasters")
       
       # ! ----- STOP EDITING ----- ! #
     },
@@ -100,7 +101,8 @@ doEvent.speciesAbundance = function(sim, eventTime, eventType) {
                          savingFolder = Paths$output)
       }
       # schedule future event(s)
-      sim <- scheduleEvent(sim, time(sim) + 1, "speciesAbundance", "plot")
+      if (time(sim) < max(as.numeric(sim$abund[, years])))
+        sim <- scheduleEvent(sim, time(sim) + 1, "speciesAbundance", "plot")
       
       # ! ----- STOP EDITING ----- ! #
     },
@@ -143,7 +145,7 @@ appendRaster <- function(allAbundanceRasters, newRaster){
 }
 
 plotAbundance <- function(abundanceData, yearsToPlot){
-  Sys.sleep(2) # To ensure we will see the results from the previous plot
+  Sys.sleep(1.2) # To ensure we will see the results from the previous plot
   dataplot <- abundanceData[years %in% yearsToPlot,]
   abundData <- Copy(dataplot)
   abundData[, years := as.factor(years)]
@@ -156,14 +158,14 @@ plotAbundance <- function(abundanceData, yearsToPlot){
                linetype="dashed", color = "black") +
     theme(legend.position = "none")
   print(pa)
-  Sys.sleep(2) # To ensure we will see the results from the previous plot
+  Sys.sleep(1.2) # To ensure we will see the results from the previous plot
   return(pa)
 }
 
 saveAbundRasters <- function(allAbundanceRasters, savingName, savingFolder){
   terra::writeRaster(x = allAbundanceRasters,
                      filetype = "GTiff",
-                     filename = file.path(savingFolder, paste0(savingName, ".tif")), 
+                     filename = file.path(savingFolder, paste0(savingName, "_abundance.tif")), 
                      overwrite = TRUE)
   message(paste0("All rasters saved to: \n", 
                  file.path(savingFolder, paste0(savingName, ".tif"))))
