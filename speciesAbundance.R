@@ -14,7 +14,7 @@ defineModule(sim, list(
                                 email = "tati.micheletti@gmail.com", comment = NULL)), 
                       class = "person"),
   childModules = character(0),
-  version = list(speciesAbundance = "0.0.0.9000"),
+  version = list(speciesAbundance = "1.0.0"),
   timeframe = as.POSIXlt(c(2013, 2022)),
   timeunit = "year",
   citation = list("citation.bib"),
