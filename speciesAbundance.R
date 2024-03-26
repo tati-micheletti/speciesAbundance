@@ -23,7 +23,7 @@ defineModule(sim, list(
   parameters = bindrows(
     defineParameter(".plotInitialTime", "numeric", start(sim), start(sim), end(sim),
                     "Describes the simulation time at which the first plot event should occur."),
-    defineParameter("studyAreaName", "character", "Riparian Woodland Reserve", NA, NA,
+    defineParameter("areaName", "character", "Riparian_Woodland_Reserve", NA, NA,
                     "Name for the study area used")
   ),
   inputObjects = bindrows(
@@ -36,9 +36,9 @@ defineModule(sim, list(
                  sourceURL = "https://zenodo.org/records/10869730/files/abundanceData.csv")
   ),
   outputObjects = bindrows(
-    createsOutput(objectName = "abundaRas", objectClass = "spatRaster", 
+    createsOutput(objectName = "abundaRas", objectClass = "SpatRaster", 
                   desc = "A raster object of spatially explicit abundance data for a given year"),
-    createsOutput(objectName = "allAbundaRas", objectClass = "spatRaster", #<~~~~~~~~~~~~~~ DOUBLE CHECK THE CLASS UPLOADED!
+    createsOutput(objectName = "allAbundaRas", objectClass = "SpatRaster",
                   desc = "a raster stack of all `abundaRas`"),  
     createsOutput(objectName = "modAbund", objectClass = "lm", 
                   desc = paste0("A fitted model (of the `lm` class) of abundance through time"))
@@ -79,7 +79,7 @@ doEvent.speciesAbundance = function(sim, eventTime, eventType) {
       # do stuff for this event
       sim$abundaRas <- convertToRaster(dataSet = sim$abund, 
                                        currentTime = time(sim),
-                                       nameRaster = paste0(P(sim)$studyAreaName, ": ", time(sim)))
+                                       nameRaster = paste0(P(sim)$areaName, ": ", time(sim)))
       sim$allAbundaRas <- appendRaster(allAbundanceRasters = sim$allAbundaRas, 
                                        newRaster = sim$abundaRas)
       
@@ -91,8 +91,14 @@ doEvent.speciesAbundance = function(sim, eventTime, eventType) {
     plot = {
       # ! ----- EDIT BELOW ----- ! #
       # do stuff for this event
-      terra::plot(sim$abundaRas, main = paste0(P(sim)$studyAreaName, ": ", time(sim)))
+      terra::plot(sim$abundaRas, main = paste0(P(sim)$areaName, ": ", time(sim)))
       plotAbundance(abundanceData = sim$abund, yearsToPlot = start(sim):time(sim))
+      
+      if (time(sim) == max(as.numeric(sim$abund[, years]))){
+        saveAbundRasters(allAbundanceRasters = sim$allAbundaRas, 
+                         savingName = P(sim)$areaName, 
+                         savingFolder = Paths$output)
+      }
       # schedule future event(s)
       sim <- scheduleEvent(sim, time(sim) + 1, "speciesAbundance", "plot")
       
@@ -120,7 +126,7 @@ doEvent.speciesAbundance = function(sim, eventTime, eventType) {
 
 convertToRaster <- function(dataSet, currentTime, nameRaster){
   ras <- rast(dataSet[years == currentTime, c("lat", "long", "abundance")], type="xyz")
-  crs(ras) <- "GEOGCRS[\"WGS 84 (CRS84)\",\n    DATUM[\"World Geodetic System 1984\",\n        ELLIPSOID[\"WGS 84\",6378137,298.257223563,\n            LENGTHUNIT[\"metre\",1]]],\n    PRIMEM[\"Greenwich\",0,\n        ANGLEUNIT[\"degree\",0.0174532925199433]],\n    CS[ellipsoidal,2],\n        AXIS[\"geodetic longitude (Lon)\",east,\n            ORDER[1],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n        AXIS[\"geodetic latitude (Lat)\",north,\n            ORDER[2],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n    USAGE[\n        SCOPE[\"unknown\"],\n        AREA[\"World\"],\n        BBOX[-90,-180,90,180]],\n    ID[\"OGC\",\"CRS84\"]]"
+  terra::crs(ras) <- "GEOGCRS[\"WGS 84 (CRS84)\",\n    DATUM[\"World Geodetic System 1984\",\n        ELLIPSOID[\"WGS 84\",6378137,298.257223563,\n            LENGTHUNIT[\"metre\",1]]],\n    PRIMEM[\"Greenwich\",0,\n        ANGLEUNIT[\"degree\",0.0174532925199433]],\n    CS[ellipsoidal,2],\n        AXIS[\"geodetic longitude (Lon)\",east,\n            ORDER[1],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n        AXIS[\"geodetic latitude (Lat)\",north,\n            ORDER[2],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n    USAGE[\n        SCOPE[\"unknown\"],\n        AREA[\"World\"],\n        BBOX[-90,-180,90,180]],\n    ID[\"OGC\",\"CRS84\"]]"
   names(ras) <- nameRaster
   return(ras)
 }
@@ -152,6 +158,15 @@ plotAbundance <- function(abundanceData, yearsToPlot){
   print(pa)
   Sys.sleep(2) # To ensure we will see the results from the previous plot
   return(pa)
+}
+
+saveAbundRasters <- function(allAbundanceRasters, savingName, savingFolder){
+  terra::writeRaster(x = allAbundanceRasters,
+                     filetype = "GTiff",
+                     filename = file.path(savingFolder, paste0(savingName, ".tif")), 
+                     overwrite = TRUE)
+  message(paste0("All rasters saved to: \n", 
+                 file.path(savingFolder, paste0(savingName, ".tif"))))
 }
 
 modelAbundTime <- function(abundanceData){
