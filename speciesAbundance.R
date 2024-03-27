@@ -33,7 +33,7 @@ defineModule(sim, list(
                                "numeric form), `years` (year of the data collection in numeric",
                                "form) and coordinates in  latlong system (two columns, `lat` and",
                                "`long`, indicating latitude and longitude, respectively)"), 
-                 sourceURL = "https://zenodo.org/records/10869730/files/abundanceData.csv")
+                 sourceURL = "https://zenodo.org/records/10885997/files/abundanceData.csv")
   ),
   outputObjects = bindrows(
     createsOutput(objectName = "abundaRas", objectClass = "SpatRaster", 
