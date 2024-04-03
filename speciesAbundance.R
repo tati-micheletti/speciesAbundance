@@ -198,7 +198,7 @@ modelAbundTime <- function(abundanceData){
   
   # ! ----- EDIT BELOW ----- ! #
   if (!suppliedElsewhere(object = "abund", sim = sim)) {
-    sim$abund <- prepInputs(url = extractURL("abund"),
+    sim$abund <- reproducible::prepInputs(url = extractURL("abund"),
                             targetFile = "abundanceData.csv",
                             destinationPath = dPath,
                             fun = "read.csv",
