@@ -57,7 +57,7 @@ Table \@ref(tab:moduleInputs-speciesAbundance) shows the full list of module inp
 ```{r moduleInputs-speciesAbundance, echo = FALSE, eval = TRUE, message = FALSE, warning = FALSE}
 df_inputs <- SpaDES.core::moduleInputs("speciesAbundance", "~/integratingSpaDESmodules/SpaDES_Modules")
 knitr::kable(df_inputs,
-             caption = "List of (ref:speciesAbundance) input objects and their description.") %>%
+             caption = "List of (ref:speciesAbundance) input objects and their description.") |>
   kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
 ```
 
@@ -65,7 +65,7 @@ Here is a summary of parameters (Table \@ref(tab:moduleParams-speciesAbundance))
 
 ```{r moduleParams-speciesAbundance, echo = FALSE, eval = TRUE, message = FALSE, warning = FALSE}
 df_params <- SpaDES.core::moduleParams("speciesAbundance", "~/integratingSpaDESmodules/SpaDES_Modules")
-knitr::kable(df_params, caption = "List of (ref:speciesAbundance) parameters and their description.") %>%
+knitr::kable(df_params, caption = "List of (ref:speciesAbundance) parameters and their description.") |>
   kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
 ```
 
@@ -79,7 +79,7 @@ Description of the module outputs (Table \@ref(tab:moduleOutputs-speciesAbundanc
 
 ```{r moduleOutputs-speciesAbundance, echo = FALSE, eval = TRUE, message = FALSE, warning = FALSE}
 df_outputs <- SpaDES.core::moduleOutputs("speciesAbundance", "~/integratingSpaDESmodules/SpaDES_Modules")
-knitr::kable(df_outputs, caption = "List of (ref:speciesAbundance) outputs and their description.") %>%
+knitr::kable(df_outputs, caption = "List of (ref:speciesAbundance) outputs and their description.") |>
   kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
 ```
 
