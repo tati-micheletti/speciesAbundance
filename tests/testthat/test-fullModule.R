@@ -67,4 +67,9 @@ testthat::test_that("Test full module", {
   testthat::expect_is(convOut, "SpatRaster")
   testthat::expect_equal(names(convOut), paste0("test:", currTime)) # or other expect 
   
+  toRemove <- list.files("SpaDES_Modules/speciesAbundance/tests/testthat/", full.names = TRUE)[list.files("SpaDES_Modules/speciesAbundance/tests/testthat/") != "test-fullModule.R"]
+  invisible(file.remove(toRemove))
+  if (file.exists("SpaDES_Modules/speciesAbundance/tests/testthat/.Rprofile")) invisible(file.remove("SpaDES_Modules/speciesAbundance/tests/testthat/.Rprofile"))
+  unlink(toRemove, recursive = TRUE)
+  testthat::expect_true(list.files("SpaDES_Modules/speciesAbundance/tests/testthat/", full.names = TRUE) == "SpaDES_Modules/speciesAbundance/tests/testthat/test-fullModule.R")
 })
