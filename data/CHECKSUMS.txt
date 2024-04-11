@@ -1,2 +1,2 @@
 "file" "checksum" "filesize" "algorithm"
-"abundanceData.csv" "b8a7e9f025b1c994" "2703352" "xxhash64"
+"abundanceData.csv" "9b4a88c7dcc3ba60" "2648485" "xxhash64"
