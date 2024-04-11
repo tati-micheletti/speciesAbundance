@@ -15,10 +15,13 @@ getOrUpdatePkg <- function(p, minVer = "0") {
   }
 }
 getOrUpdatePkg("testthat")
+
 testthat::test_that("Test full module", {
   
+  getOrUpdatePkg("waldo")
+  
   Setup <- SpaDES.project::setupProject(
-    paths = list(modulePath = "~/integratingSpaDESmodules/SpaDES_Modules",
+    paths = list(modulePath = "SpaDES_Modules/",
                  outputPath = "outputs"),
     modules = "speciesAbundance",
     times = list(start = 2013,
@@ -32,36 +35,36 @@ testthat::test_that("Test full module", {
   # You have two strategies to test your module:
   # 1. Test the overall simulation results for the given objects, using the
   #    sample code below:
-
+  
   results <- testthat::expect_warning(do.call(SpaDES.core::simInitAndSpades, Setup))
   
   # is output a simList?
-  expect_is(results, "simList")
-
+  testthat::expect_is(results, "simList")
+  
   # does output have your module in it
-  expect_true(any(unlist(SpaDES.core::modules(results)) %in% "speciesAbundance"))
-
+  testthat::expect_true(any(unlist(SpaDES.core::modules(results)) %in% "speciesAbundance"))
+  
   # did it run to the end?
-  expect_true(time(results) == 2032)
-
+  testthat::expect_true(time(results) == 2032)
+  
   # 2. Test the functions inside of the module using the sample code below:
   #    To allow the `moduleCoverage` function to calculate unit test coverage
   #    level, it needs access to all functions directly.
   #    Use this approach when using any function within the simList object
   #    (i.e., one version as a direct call, and one with `simList` object prepended).
-
+  
   appenOut <- results$.mods$speciesAbundance$appendRaster(allAbundanceRasters = results$allAbundaRas, 
-                            newRaster = results$abundaRas)
-
-  expect_is(appenOut, "SpatRaster")
-  expect_equal(names(appenOut)[length(names(appenOut))], "Riparian_Woodland_Reserve: 2022") # or other expect function in testthat package.
+                                                          newRaster = results$abundaRas)
+  
+  testthat::expect_is(appenOut, "SpatRaster")
+  testthat::expect_equal(names(appenOut)[length(names(appenOut))], "Riparian_Woodland_Reserve: 2022") # or other expect function in testthat package.
   
   currTime <- 2013
   convOut <- results$.mods$speciesAbundance$convertToRaster(dataSet = results$abund, 
                                                             currentTime = currTime, 
                                                             nameRaster = paste0("test:", currTime))
   
-  expect_is(convOut, "SpatRaster")
-  expect_equal(names(convOut), paste0("test:", currTime)) # or other expect 
+  testthat::expect_is(convOut, "SpatRaster")
+  testthat::expect_equal(names(convOut), paste0("test:", currTime)) # or other expect 
   
 })
