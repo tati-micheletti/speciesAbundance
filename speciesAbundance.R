@@ -66,12 +66,9 @@ doEvent.speciesAbundance = function(sim, eventTime, eventType) {
                "long" %in% names(sim$abund)))
         stop("Please revise the column names in the abundance data")
       
-      lastYearOfData <- max(as.numeric(sim$abund[, years]))
-      
       # schedule future event(s)
       sim <- scheduleEvent(sim, time(sim), "speciesAbundance", "tableToRasters")
       sim <- scheduleEvent(sim, P(sim)$.plotInitialTime, "speciesAbundance", "plot")
-      sim <- scheduleEvent(sim, lastYearOfData, "speciesAbundance", "abundanceThroughTime")
     },
     tableToRasters = {
       # ! ----- EDIT BELOW ----- ! #
@@ -93,28 +90,16 @@ doEvent.speciesAbundance = function(sim, eventTime, eventType) {
       # ! ----- EDIT BELOW ----- ! #
       # do stuff for this event
       terra::plot(sim$abundaRas, main = paste0(P(sim)$areaName, ": ", time(sim)))
-      plotAbundance(abundanceData = sim$abund, yearsToPlot = start(sim):time(sim))
-      
+
       if (time(sim) == max(as.numeric(sim$abund[, years]))){
         saveAbundRasters(allAbundanceRasters = sim$allAbundaRas, 
                          savingName = P(sim)$areaName, 
                          savingFolder = Paths$output)
       }
+      
       # schedule future event(s)
       if (time(sim) < max(as.numeric(sim$abund[, years])))
         sim <- scheduleEvent(sim, time(sim) + 1, "speciesAbundance", "plot")
-      
-      # ! ----- STOP EDITING ----- ! #
-    },
-    abundanceThroughTime = {
-      # ! ----- EDIT BELOW ----- ! #
-      # do stuff for this event
-      
-      sim$modAbund <- modelAbundTime(abundanceData = sim$abund)
-      
-      # schedule future event(s)
-      # No need to schedule further events as this one happens at the end of the 
-      # module's data
       
       # ! ----- STOP EDITING ----- ! #
     },
@@ -123,6 +108,7 @@ doEvent.speciesAbundance = function(sim, eventTime, eventType) {
   )
   return(invisible(sim))
 }
+
 ## event functions
 #   - keep event functions short and clean, modularize by calling subroutines from section below.
 
@@ -144,24 +130,6 @@ appendRaster <- function(allAbundanceRasters, newRaster){
   return(allAbundanceRasters)
 }
 
-plotAbundance <- function(abundanceData, yearsToPlot){
-  Sys.sleep(1.2) # To ensure we will see the results from the previous plot
-  dataplot <- abundanceData[years %in% yearsToPlot,]
-  abundData <- Copy(dataplot)
-  abundData[, years := as.factor(years)]
-  abundData[, averageYear := mean(abundance), by = "years"]
-  pa <- ggplot(data = abundData, aes(x = abundance, group=years, color=years, fill = years)) +
-    geom_histogram(binwidth=5) +
-    facet_grid(years ~ .) +
-    geom_vline(data = unique(abundData[, c("years", "averageYear")]),
-               aes(xintercept = averageYear),
-               linetype="dashed", color = "black") +
-    theme(legend.position = "none")
-  print(pa)
-  Sys.sleep(1.2) # To ensure we will see the results from the previous plot
-  return(pa)
-}
-
 saveAbundRasters <- function(allAbundanceRasters, savingName, savingFolder){
   terra::writeRaster(x = allAbundanceRasters,
                      filetype = "GTiff",
@@ -171,11 +139,6 @@ saveAbundRasters <- function(allAbundanceRasters, savingName, savingFolder){
                  file.path(savingFolder, paste0(savingName, ".tif"))))
 }
 
-modelAbundTime <- function(abundanceData){
-  modAbund <- lm(formula = abundance ~ years, data = abundanceData)
-  summary(modAbund)
-  return(modAbund)
-}
 
 .inputObjects <- function(sim) {
   # Any code written here will be run during the simInit for the purpose of creating
