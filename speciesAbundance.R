@@ -23,6 +23,8 @@ defineModule(sim, list(
   parameters = bindrows(
     defineParameter(".plotInitialTime", "numeric", start(sim), start(sim), end(sim),
                     "Describes the simulation time at which the first plot event should occur."),
+    defineParameter(".plotInterval", "numeric", 5, NA, NA,
+                    "Describes the simulation time interval between plot events."),
     defineParameter("areaName", "character", "Riparian_Woodland_Reserve", NA, NA,
                     "Name for the study area used")
   ),
@@ -98,8 +100,9 @@ doEvent.speciesAbundance = function(sim, eventTime, eventType) {
       }
       
       # schedule future event(s)
-      if (time(sim) < max(as.numeric(sim$abund[, years])))
-        sim <- scheduleEvent(sim, time(sim) + 1, "speciesAbundance", "plot")
+      if ((time(sim) + P(sim)$.plotInterval) < max(as.numeric(sim$abund[, years])))
+        sim <- scheduleEvent(sim, time(sim) + P(sim)$.plotInterval, 
+                             "speciesAbundance", "plot")
       
       # ! ----- STOP EDITING ----- ! #
     },
