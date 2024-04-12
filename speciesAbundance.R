@@ -42,9 +42,7 @@ defineModule(sim, list(
     createsOutput(objectName = "abundaRas", objectClass = "SpatRaster", 
                   desc = "A raster object of spatially explicit abundance data for a given year"),
     createsOutput(objectName = "allAbundaRas", objectClass = "SpatRaster",
-                  desc = "a raster stack of all `abundaRas`"),  
-    createsOutput(objectName = "modAbund", objectClass = "lm", 
-                  desc = paste0("A fitted model (of the `lm` class) of abundance through time"))
+                  desc = "a raster stack of all `abundaRas`")
   )
 ))
 
