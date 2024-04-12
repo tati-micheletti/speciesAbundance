@@ -1,7 +1,7 @@
 ---
 title: "speciesAbundance Manual"
 subtitle: "v.1.0.0"
-date: "Last updated: 2024-04-11"
+date: "Last updated: 2024-04-12"
 output:
   bookdown::html_document2:
     toc: true
@@ -46,7 +46,7 @@ The data for version 1.0.0. is available at: https://zenodo.org/records/10885997
 
 Table \@ref(tab:moduleInputs-speciesAbundance) shows the full list of module inputs.
 
-<table class="table" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>(\#tab:moduleInputs-speciesAbundance)(\#tab:moduleInputs-speciesAbundance)List of (ref:speciesAbundance) input objects and their description.</caption>
  <thead>
   <tr>
@@ -68,7 +68,7 @@ Table \@ref(tab:moduleInputs-speciesAbundance) shows the full list of module inp
 
 Here is a summary of parameters (Table \@ref(tab:moduleParams-speciesAbundance))
 
-<table class="table" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>(\#tab:moduleParams-speciesAbundance)(\#tab:moduleParams-speciesAbundance)List of (ref:speciesAbundance) parameters and their description.</caption>
  <thead>
   <tr>
@@ -116,7 +116,7 @@ Before the simulation actually starts, the module will download data (in this ca
 
 Description of the module outputs (Table \@ref(tab:moduleOutputs-speciesAbundance)).
 
-<table class="table" style="color: black; margin-left: auto; margin-right: auto;">
+<table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>(\#tab:moduleOutputs-speciesAbundance)(\#tab:moduleOutputs-speciesAbundance)List of (ref:speciesAbundance) outputs and their description.</caption>
  <thead>
   <tr>
@@ -135,11 +135,6 @@ Description of the module outputs (Table \@ref(tab:moduleOutputs-speciesAbundanc
    <td style="text-align:left;"> allAbundaRas </td>
    <td style="text-align:left;"> SpatRaster </td>
    <td style="text-align:left;"> a raster stack of all `abundaRas` </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> modAbund </td>
-   <td style="text-align:left;"> lm </td>
-   <td style="text-align:left;"> A fitted model (of the `lm` class) of abundance through time </td>
   </tr>
 </tbody>
 </table>
